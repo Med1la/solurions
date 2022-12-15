@@ -126,3 +126,110 @@ from product
 where product.type = ‘PC’
 group by product.maker
 having count(*) >= 3
+21.
+select product.maker, max(pc.price)
+from product, pc
+where product.model = pc.model
+and product.type = ‘PC’
+group by product.maker
+
+22.
+Select speed, avg(price) from pc
+group by pc.speed
+having (speed>600)
+
+23.
+select distinct product.maker
+from product, pc
+where product.model = pc.model
+and product.type = ‘PC’
+and pc.speed >= 750
+and exists(select ‘x’ from laptop, product p
+where p.model = laptop.model
+and p.type = ‘Laptop’
+and p.maker = product.maker
+and laptop.speed >= 750)
+
+24.
+select distinct product.model
+from product, pc, laptop, printer
+where /*product.model in(pc.model, laptop.model, printer.model)
+and*/ pc.price = (select max(pcc.price) from pc pcc)
+and laptop.price = (select max(l.price) from laptop l)
+and printer.price = (select max(pr.price) from printer pr)
+and (
+(pc.price >= laptop.price and pc.price >= printer.price
+and product.model = pc.model)
+or
+(laptop.price >= pc.price and laptop.price >= printer.price
+and product.model = laptop.model)
+or
+(printer.price >= laptop.price and printer.price >= pc.price
+and product.model = printer.model)
+)
+
+25.
+select distinct product.maker
+from product, pc
+where product.type = ‘PC’
+and product.model = pc.model
+and pc.ram = (select min(pcc.ram) from pc pcc where pcc.ram <> 0)
+and pc.speed = (select max(pccc.speed) from pc pccc
+where pccc.ram = (select min(pcc.ram) from pc pcc where pcc.ram <> 0))
+and exists(select ‘x’ from product p
+where p.type = ‘Printer’
+and p.maker = product.maker)
+
+26.
+SELECT AVG(price) FROM (
+SELECT price FROM pc WHERE model IN
+(SELECT model FROM product WHERE maker=’A’ AND type=’PC’)
+UNION ALL
+SELECT price FROM laptop WHERE model IN
+(SELECT model FROM product WHERE maker=’A’ AND type=’Laptop’)
+) as prod
+
+27.
+select product.maker, sum(pc.hd) / count(*)
+from product, pc
+where product.type = ‘PC’
+and product.model = pc.model
+and exists(select ‘x’ from product p
+where p.maker = product.maker
+and p.type = ‘Printer’)
+group by product.maker
+
+28.
+select sum(pc.hd) / count(*)
+from product, pc
+where product.type = ‘PC’
+and product.model = pc.model
+and exists(select ‘x’ from product p
+where p.maker = product.maker
+and p.type = ‘Printer’)
+
+29.
+SELECT Income_o.point, Income_o.date, SUM(inc),SUM(out)
+FROM Income_o LEFT JOIN
+Outcome_o ON Income_o.point = Outcome_o.point AND
+Income_o.date = Outcome_o.date
+GROUP BY Income_o.point, Income_o.date
+UNION
+SELECT Outcome_o.point, Outcome_o.date, SUM(inc),SUM(out)
+FROM Outcome_o LEFT JOIN
+Income_o ON Income_o.point = Outcome_o.point AND
+Income_o.date = Outcome_o.date
+GROUP BY Outcome_o.point, Outcome_o.date
+
+30.
+SELECT DISTINCT point,date,SUM(out) AS out, SUM(inc) AS inc FROM (
+SELECT Income.point, Income.date, out, inc
+FROM Income LEFT JOIN
+Outcome ON Income.point = Outcome.point AND
+Income.date = Outcome.date AND Income.code= Outcome.code
+UNION ALL
+SELECT Outcome.point, Outcome.date, out, inc
+FROM Outcome LEFT JOIN
+Income ON Income.point = Outcome.point AND
+Income.date = Outcome.date AND Income.code=Outcome.code) AS t1
+GROUP BY point, date

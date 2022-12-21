@@ -4,9 +4,10 @@ FROM PC
 where price<500
 
 2. 
-SELECT DISTINCT maker
-FROM product
-where type=’Printer’
+select distinct product.maker
+from product 
+where type like 'printer'
+
 
 3.
 SELECT model, ram, screen
@@ -23,51 +24,47 @@ from pc
 where ((cd=’12x’ or cd=’24x’)and(price<600))
 
 6.
-SELECT maker, speed
-FROM laptop l, Product p
-WHERE l.model = p.model
-AND l.hd >=10
+select distinct  maker, speed
+from laptop, product
+where laptop.hd>=10 and laptop.model=product.model
 
 7.
-SELECT p.model, price
-FROM Product p, PC pp
-WHERE p.model=pp.model
-AND maker=’B’
-UNION
-SELECT p.model, price
-FROM Product p, printer pp
-WHERE p.model=pp.model
-AND maker=’B’
-UNION
-SELECT p.model, price
-FROM Product p, laptop pp
-WHERE p.model=pp.model
-AND maker=’B’
+select distinct product.model, price
+from pc, product
+where product.maker='B' and product.model=pc.model
+union
+select distinct product.model, price
+from laptop, product
+where product.maker='B' and product.model=laptop.model
+union
+select distinct product.model, price
+from printer, product
+where product.maker='B' and product.model=printer.model
+
 
 8.
-select distinct product.maker
-from product
-where product.type=’PC’ and
-product.maker not in (
 select product.maker
 from product
-where product.type = ‘Laptop’)
+where product.type='pc'
+except 
+select product.maker
+from product
+where product.type='laptop'
+
 
 9.
-SELECT DISTINCT maker
-FROM product p,PC
-WHERE p.model=pc.model
-AND pc.speed>449
+select distinct product.maker
+from product, pc
+where pc.speed>=450 and product.model=pc.model
 
 10.
-SELECT model, price
-FROM Printer
-WHERE price = (SELECT MAX(price)
-FROM printer)
+select model, price 
+from printer
+where printer.price =  (select max(price) from printer)
 
 11.
-SELECT AVG(speed)
-FROM PC
+Select avg (speed)
+from pc
 
 12.
 SELECT AVG(speed)
@@ -75,161 +72,50 @@ FROM laptop
 WHERE price > 1000
 
 13.
-select sum(pc.speed) / count(*)
-from pc
-where pc.model in (select product.model from product
-where product.maker = ‘A’)
+select avg(speed) as avg_speed
+from pc, product
+where product.maker='A' and product.model= pc.model
 
 14.
-SELECT speed, AVG(price)
-FROM PC
-GROUP BY speed
+Select ships.class, name, country
+from ships, classes
+where numguns>=10 and ships.class=classes.class
+
 
 15.
-select distinct hd from pc
-where exists(select ‘x’ from pc p
-where p.code <> pc.code
-and p.hd = pc.hd)
+select hd
+from pc
+group by hd
+having count(model)>=2
 
 16.
-SELECT DISTINCT a.model, b.model, a.speed, a.ram
-FROM pc a, pc b
-WHERE a.ram = b.ram
-AND a.speed = b.speed
-AND a.model > b.model
+select distinct a.model, b.model, a.speed, a.ram
+from pc as a, pc b
+where a.speed = b.speed and a.ram=b.ram and a.model>b.model
 
 17.
-SELECT DISTINCT p.type, l.model, l.speed
-FROM laptop l, product p
-WHERE speed < ALL (SELECT speed FROM PC)
-AND l.model=p.model
+select distinct product.type, laptop.model, laptop.speed 
+from laptop, product
+where speed< all (select speed from pc) and laptop.model = product.model
 
 18.
-select distinct product.maker, printer.price
+select distinct maker, printer.price 
 from product, printer
-where product.model = printer.model
-and printer.color = ‘Y’
-and printer.price = (select min(p.price)
-from printer p
-where p.color = ‘Y’)
+where printer.color='y' and
+printer.price = (select min(price) from printer where printer.color='y') 
+and product.model = printer.model
 
 19.
-select product.maker, sum(laptop.screen) / count(laptop.model)
+select product.maker, avg(laptop.screen)
 from product, laptop
-where product.type = ‘Laptop’
-and product.model = laptop.model
+where product.type='laptop' and product.model=laptop.model
 group by product.maker
 
 20.
-select product.maker, count(*)
+select product.maker, count(model)
 from product
-where product.type = ‘PC’
+where product.type='pc'
 group by product.maker
-having count(*) >= 3
-21.
-select product.maker, max(pc.price)
-from product, pc
-where product.model = pc.model
-and product.type = ‘PC’
-group by product.maker
+having count(model)>=3
 
-22.
-Select speed, avg(price) from pc
-group by pc.speed
-having (speed>600)
 
-23.
-select distinct product.maker
-from product, pc
-where product.model = pc.model
-and product.type = ‘PC’
-and pc.speed >= 750
-and exists(select ‘x’ from laptop, product p
-where p.model = laptop.model
-and p.type = ‘Laptop’
-and p.maker = product.maker
-and laptop.speed >= 750)
-
-24.
-select distinct product.model
-from product, pc, laptop, printer
-where /*product.model in(pc.model, laptop.model, printer.model)
-and*/ pc.price = (select max(pcc.price) from pc pcc)
-and laptop.price = (select max(l.price) from laptop l)
-and printer.price = (select max(pr.price) from printer pr)
-and (
-(pc.price >= laptop.price and pc.price >= printer.price
-and product.model = pc.model)
-or
-(laptop.price >= pc.price and laptop.price >= printer.price
-and product.model = laptop.model)
-or
-(printer.price >= laptop.price and printer.price >= pc.price
-and product.model = printer.model)
-)
-
-25.
-select distinct product.maker
-from product, pc
-where product.type = ‘PC’
-and product.model = pc.model
-and pc.ram = (select min(pcc.ram) from pc pcc where pcc.ram <> 0)
-and pc.speed = (select max(pccc.speed) from pc pccc
-where pccc.ram = (select min(pcc.ram) from pc pcc where pcc.ram <> 0))
-and exists(select ‘x’ from product p
-where p.type = ‘Printer’
-and p.maker = product.maker)
-
-26.
-SELECT AVG(price) FROM (
-SELECT price FROM pc WHERE model IN
-(SELECT model FROM product WHERE maker=’A’ AND type=’PC’)
-UNION ALL
-SELECT price FROM laptop WHERE model IN
-(SELECT model FROM product WHERE maker=’A’ AND type=’Laptop’)
-) as prod
-
-27.
-select product.maker, sum(pc.hd) / count(*)
-from product, pc
-where product.type = ‘PC’
-and product.model = pc.model
-and exists(select ‘x’ from product p
-where p.maker = product.maker
-and p.type = ‘Printer’)
-group by product.maker
-
-28.
-select sum(pc.hd) / count(*)
-from product, pc
-where product.type = ‘PC’
-and product.model = pc.model
-and exists(select ‘x’ from product p
-where p.maker = product.maker
-and p.type = ‘Printer’)
-
-29.
-SELECT Income_o.point, Income_o.date, SUM(inc),SUM(out)
-FROM Income_o LEFT JOIN
-Outcome_o ON Income_o.point = Outcome_o.point AND
-Income_o.date = Outcome_o.date
-GROUP BY Income_o.point, Income_o.date
-UNION
-SELECT Outcome_o.point, Outcome_o.date, SUM(inc),SUM(out)
-FROM Outcome_o LEFT JOIN
-Income_o ON Income_o.point = Outcome_o.point AND
-Income_o.date = Outcome_o.date
-GROUP BY Outcome_o.point, Outcome_o.date
-
-30.
-SELECT DISTINCT point,date,SUM(out) AS out, SUM(inc) AS inc FROM (
-SELECT Income.point, Income.date, out, inc
-FROM Income LEFT JOIN
-Outcome ON Income.point = Outcome.point AND
-Income.date = Outcome.date AND Income.code= Outcome.code
-UNION ALL
-SELECT Outcome.point, Outcome.date, out, inc
-FROM Outcome LEFT JOIN
-Income ON Income.point = Outcome.point AND
-Income.date = Outcome.date AND Income.code=Outcome.code) AS t1
-GROUP BY point, date

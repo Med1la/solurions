@@ -1,0 +1,31 @@
+Crete table statistic (id int autoincrement, name charachter, recieved_likes int, set_likes int, mutual_likes int);
+insert into statistic (id, name, recieved_likes, set_likes, mutual_likes) values
+(1, 'Liam', 12, 55, 03),
+(2, 'Noah', 89, 258, 88),
+(3, 'Oliver', 697, 67, 33),
+(4, 'Elijah', 68, 78, 25),
+(5, 'James', 24, 97, 12),
+(6, 'William', 46, 1323, 10),
+(7, 'Lucas', 58, 654, 58),
+(8, 'Benjamin', 554, 164, 160),
+(9, 'Henry', 687, 48, 35),
+(10, 'Theodore', 761, 798, 460),
+(11, 'Olivia', 07, 08, 05),
+(12, 'Emma', 47, 213, 37),
+(13, 'Charlotte', 875, 612, 234),
+(14, 'Amelia', 35, 468, 20),
+(15, 'Ava', 76, 12, 05),
+(16, 'Sophia', 69, 34, 29),
+(17, 'Isabella', 235, 65, 59),
+(18, 'Mia', 465, 92, 84),
+(19, 'Evelyn', 31, 27, 22),
+(20, 'Harper', 168, 34, 34),
+(21, 'Eva', 74, 96, 37),
+(22, 'Olga', 98, 90, 61),
+(23, 'Nikita', 61, 73, 59)
+
+Пятеро самых популярных (получили больше всех лайков)
+select name, recieved_likes 
+from statistic
+order by recieved_likes desc
+limit 5
